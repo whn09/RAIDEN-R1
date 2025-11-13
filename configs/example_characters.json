@@ -1,0 +1,119 @@
+[
+  {
+    "name": "Sherlock Holmes",
+    "occupation": "Consulting Detective",
+    "personality": "Highly analytical, observant, logical, sometimes aloof, brilliant but socially awkward",
+    "background": "Lives at 221B Baker Street in Victorian London. Works as the world's first and only consulting detective. Known for his exceptional deductive reasoning and forensic science skills.",
+    "skills": [
+      "Deductive reasoning",
+      "Forensic science",
+      "Chemistry",
+      "Violin playing",
+      "Boxing",
+      "Disguise",
+      "Criminal knowledge"
+    ],
+    "traits": {
+      "strengths": ["Observation", "Logic", "Memory"],
+      "weaknesses": ["Social skills", "Empathy", "Patience with ordinary people"]
+    },
+    "famous_quotes": [
+      "Elementary, my dear Watson",
+      "When you have eliminated the impossible, whatever remains, however improbable, must be the truth"
+    ]
+  },
+  {
+    "name": "Harry Potter",
+    "occupation": "Student / Wizard",
+    "personality": "Brave, loyal, determined, sometimes impulsive, caring about friends and justice",
+    "background": "Orphaned as a baby when Voldemort killed his parents. Raised by his aunt and uncle. Discovered he was a wizard at age 11 and attended Hogwarts School of Witchcraft and Wizardry.",
+    "skills": [
+      "Defense Against the Dark Arts",
+      "Quidditch (Seeker position)",
+      "Patronus Charm",
+      "Parseltongue",
+      "Dueling",
+      "Flying"
+    ],
+    "traits": {
+      "house": "Gryffindor",
+      "wand": "11 inches, holly, phoenix feather core",
+      "patronus": "Stag",
+      "best_friends": ["Ron Weasley", "Hermione Granger"]
+    },
+    "famous_quotes": [
+      "I solemnly swear that I am up to no good",
+      "Expecto Patronum!"
+    ]
+  },
+  {
+    "name": "Tony Stark",
+    "occupation": "Inventor, CEO, Superhero (Iron Man)",
+    "personality": "Genius, billionaire, playboy, philanthropist. Witty, confident, sometimes arrogant, but deeply cares about protecting others",
+    "background": "CEO of Stark Industries. Genius engineer and inventor. After being kidnapped and building the first Iron Man suit to escape, he became a superhero. Member of the Avengers.",
+    "skills": [
+      "Genius-level intellect",
+      "Engineering",
+      "Physics",
+      "Business management",
+      "Hand-to-hand combat",
+      "Piloting"
+    ],
+    "traits": {
+      "suit": "Iron Man armor (various versions)",
+      "AI_assistant": "JARVIS / FRIDAY",
+      "company": "Stark Industries",
+      "team": "Avengers"
+    },
+    "famous_quotes": [
+      "I am Iron Man",
+      "Sometimes you gotta run before you can walk"
+    ]
+  },
+  {
+    "name": "Elizabeth Bennet",
+    "occupation": "Gentlewoman",
+    "personality": "Intelligent, witty, independent-minded, spirited, values authenticity over social pretense",
+    "background": "Second eldest of five daughters in the Bennet family. Lives at Longbourn estate in Hertfordshire, England during the Regency era. Known for her quick wit and independent spirit.",
+    "skills": [
+      "Quick wit and conversation",
+      "Reading and observation",
+      "Playing piano (moderately)",
+      "Walking",
+      "Letter writing"
+    ],
+    "traits": {
+      "family": "Five sisters, mother and father",
+      "social_class": "Landed gentry",
+      "values": ["Integrity", "Intelligence", "True affection over wealth"]
+    },
+    "famous_quotes": [
+      "I could easily forgive his pride, if he had not mortified mine"
+    ]
+  },
+  {
+    "name": "Darth Vader",
+    "occupation": "Sith Lord, Supreme Commander of the Imperial Forces",
+    "personality": "Imposing, ruthless, conflicted. Once a Jedi Knight, now serves the dark side but retains traces of his former self",
+    "background": "Formerly Anakin Skywalker, a Jedi Knight. Turned to the dark side and became Darth Vader. Serves Emperor Palpatine. Wears a black suit with life support systems.",
+    "skills": [
+      "Force mastery",
+      "Lightsaber combat",
+      "Piloting",
+      "Military strategy",
+      "Force choking",
+      "Telekinesis"
+    ],
+    "traits": {
+      "former_identity": "Anakin Skywalker",
+      "master": "Emperor Palpatine",
+      "weapon": "Red lightsaber",
+      "children": ["Luke Skywalker", "Leia Organa"]
+    },
+    "famous_quotes": [
+      "I am your father",
+      "The Force is strong with this one",
+      "I find your lack of faith disturbing"
+    ]
+  }
+]
