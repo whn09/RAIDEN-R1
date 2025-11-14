@@ -157,10 +157,11 @@ nohup python -m sglang.launch_server \
     --tp-size "$TP_SIZE" \
     --ep-size "$EP_SIZE" \
     --mem-fraction-static "$MEMORY_FRACTION" \
-    --tool-call-parser minimax-m2 \
-    --reasoning-parser minimax-append-think \
     --trust-remote-code \
     > "$LOG_FILE" 2>&1 &
+
+    # --tool-call-parser minimax-m2 \
+    # --reasoning-parser minimax-append-think \
 
 SERVER_PID=$!
 echo "Server PID: $SERVER_PID"
