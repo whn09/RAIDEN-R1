@@ -138,6 +138,16 @@ Generate training data using the data generation methods described below.
 
 ```bash
 python scripts/evaluate.py --model_path <path_to_model> --eval_data <path_to_eval_data>
+
+python scripts/evaluate.py \
+  --model_path ./outputs/epoch_0 \
+  --eval_data ./data/test_training/validation.json \
+  --output_file ./evaluation_results.json
+
+python scripts/evaluate.py \
+  --model_path Qwen/Qwen2.5-14B-Instruct \
+  --eval_data ./data/test_training/validation.json \
+  --output_file ./evaluation_results_origin.json
 ```
 
 ## Data Generation
@@ -170,15 +180,56 @@ See [BEDROCK_QUICKSTART.md](BEDROCK_QUICKSTART.md) for details.
 
 ```bash
 # Deploy SGLang server
+
+hf download MiniMaxAI/MiniMax-M2 --local-dir /opt/dlami/nvme/MiniMax-M2/
+
+# python -m sglang.launch_server \
+#     --model-path /opt/dlami/nvme/MiniMax-M2 \
+#     --tp-size 8 \
+#     --ep-size 8 \
+#     --tool-call-parser minimax-m2 \
+#     --trust-remote-code \
+#     --host 0.0.0.0 \
+#     --reasoning-parser minimax-append-think \
+#     --port 30000 \
+#     --mem-fraction-static 0.85
+
 ./scripts/deploy_sglang.sh \
-    --model-path /path/to/model \
+    --model-path /opt/dlami/nvme/MiniMax-M2/ \
     --model-name minimax-m2 \
-    --tp-size 8
+    --tp-size 8 \
+    --ep-size 8
 
 # Generate data
 python scripts/generate_data_with_sglang.py \
     --num_samples_per_profile 2 \
-    --include_cm
+    --include_cm \
+    --model_name MiniMax-M2 \
+    --language zh
+
+hf download zai-org/GLM-4.6 --local-dir /opt/dlami/nvme/GLM-4.6/
+
+# python -m sglang.launch_server \
+#     --model-path /opt/dlami/nvme/GLM-4.6 \
+#     --tp-size 8 \
+#     --ep-size 8 \
+#     --trust-remote-code \
+#     --host 0.0.0.0 \
+#     --port 30000 \
+#     --mem-fraction-static 0.85
+
+./scripts/deploy_sglang.sh \
+    --model-path /opt/dlami/nvme/GLM-4.6/ \
+    --model-name glm-4.6 \
+    --tp-size 8 \
+    --ep-size 8
+
+# Generate data
+python scripts/generate_data_with_sglang.py \
+    --num_samples_per_profile 2 \
+    --include_cm \
+    --model_name GLM-4.6 \
+    --language zh
 ```
 
 See [SGLANG_QUICKSTART.md](SGLANG_QUICKSTART.md) for details.

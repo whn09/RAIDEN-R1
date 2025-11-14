@@ -18,7 +18,8 @@ echo -e "==================================${NC}"
 MODEL_PATH=""
 MODEL_NAME=""
 PORT=30000
-TP_SIZE=8  # Tensor parallel size for p5en.48xlarge (8 H100 GPUs)
+TP_SIZE=8  # Tensor parallel size for p5en.48xlarge (8 H200 GPUs)
+EP_SIZE=8  # Expert parallel size for p5en.48xlarge (8 H200 GPUs)
 HOST="0.0.0.0"
 MEMORY_FRACTION=0.9
 
@@ -39,6 +40,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --tp-size)
             TP_SIZE="$2"
+            shift 2
+            ;;
+        --ep-size)
+            EP_SIZE="$2"
             shift 2
             ;;
         --memory-fraction)
@@ -63,6 +68,7 @@ if [ -z "$MODEL_PATH" ]; then
     echo "  --model-name NAME       Model name for API (optional)"
     echo "  --port PORT             Server port (default: 30000)"
     echo "  --tp-size SIZE          Tensor parallel size (default: 8 for p5en.48xlarge)"
+    echo "  --ep-size SIZE          Expert parallel size (default: 8 for p5en.48xlarge)"
     echo "  --memory-fraction NUM   GPU memory fraction (default: 0.9)"
     echo ""
     echo "Examples:"
@@ -87,6 +93,7 @@ echo "  Model Path: $MODEL_PATH"
 echo "  Model Name: $MODEL_NAME"
 echo "  Port: $PORT"
 echo "  Tensor Parallel Size: $TP_SIZE"
+echo "  Expert Parallel Size: $EP_SIZE"
 echo "  Host: $HOST"
 echo "  Memory Fraction: $MEMORY_FRACTION"
 echo ""
@@ -118,6 +125,12 @@ if [ "$TP_SIZE" -gt "$GPU_COUNT" ]; then
     TP_SIZE=$GPU_COUNT
 fi
 
+if [ "$EP_SIZE" -gt "$GPU_COUNT" ]; then
+    echo -e "${YELLOW}Warning: EP_SIZE ($EP_SIZE) > GPU_COUNT ($GPU_COUNT)${NC}"
+    echo -e "${YELLOW}Setting EP_SIZE to $GPU_COUNT${NC}"
+    EP_SIZE=$GPU_COUNT
+fi
+
 # Kill existing SGLang server on this port
 if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
     echo -e "${YELLOW}Killing existing server on port $PORT...${NC}"
@@ -142,9 +155,11 @@ nohup python -m sglang.launch_server \
     --host "$HOST" \
     --port "$PORT" \
     --tp-size "$TP_SIZE" \
+    --ep-size "$EP_SIZE" \
     --mem-fraction-static "$MEMORY_FRACTION" \
-    --enable-torch-compile \
-    --context-length 32768 \
+    --tool-call-parser minimax-m2 \
+    --reasoning-parser minimax-append-think \
+    --trust-remote-code \
     > "$LOG_FILE" 2>&1 &
 
 SERVER_PID=$!
@@ -201,6 +216,7 @@ cat > "$SERVER_INFO_FILE" <<EOF
   "base_url": "http://localhost:$PORT",
   "pid": $SERVER_PID,
   "tp_size": $TP_SIZE,
+  "ep_size": $EP_SIZE,
   "started_at": "$(date -Iseconds)",
   "log_file": "$LOG_FILE"
 }
