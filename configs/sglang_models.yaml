@@ -1,0 +1,98 @@
+# SGLang Model Configurations for RAIDEN Data Generation
+# Use these recommended settings for different models on p5en.48xlarge (8x H100)
+
+models:
+  # MiniMax M2 (recommended for role-playing)
+  minimax-m2:
+    model_path: "/path/to/MiniMax-Text-01"
+    tp_size: 8  # Use all 8 GPUs
+    memory_fraction: 0.9
+    context_length: 32768
+    recommended_batch_size: 32
+    notes: "Excellent for role-playing tasks, fast generation speed"
+
+  # GLM-4 (9B parameters)
+  glm-4-9b:
+    model_path: "/path/to/glm-4-9b-chat"
+    tp_size: 4  # 4 GPUs sufficient
+    memory_fraction: 0.85
+    context_length: 131072  # GLM-4 supports long context
+    recommended_batch_size: 48
+    notes: "Good balance of quality and speed"
+
+  # Qwen2.5-14B-Instruct
+  qwen2.5-14b:
+    model_path: "/path/to/Qwen2.5-14B-Instruct"
+    tp_size: 4
+    memory_fraction: 0.85
+    context_length: 32768
+    recommended_batch_size: 40
+    notes: "Strong instruction following, good for CoT reasoning"
+
+  # Qwen2.5-32B-Instruct (higher quality)
+  qwen2.5-32b:
+    model_path: "/path/to/Qwen2.5-32B-Instruct"
+    tp_size: 8
+    memory_fraction: 0.9
+    context_length: 32768
+    recommended_batch_size: 24
+    notes: "Better quality but slower than 14B"
+
+  # DeepSeek-V2.5
+  deepseek-v2.5:
+    model_path: "/path/to/DeepSeek-V2.5"
+    tp_size: 8
+    memory_fraction: 0.9
+    context_length: 32768
+    recommended_batch_size: 28
+    notes: "Strong reasoning capabilities"
+
+  # Yi-1.5-34B-Chat
+  yi-34b:
+    model_path: "/path/to/Yi-1.5-34B-Chat"
+    tp_size: 8
+    memory_fraction: 0.9
+    context_length: 32768
+    recommended_batch_size: 24
+    notes: "High quality Chinese and English"
+
+# Performance tuning
+performance:
+  # For fastest generation (lower quality)
+  fast:
+    temperature: 0.7
+    top_p: 0.9
+    max_tokens: 2048
+
+  # For balanced quality and speed
+  balanced:
+    temperature: 0.8
+    top_p: 0.95
+    max_tokens: 4096
+
+  # For highest quality (slower)
+  quality:
+    temperature: 0.9
+    top_p: 0.95
+    max_tokens: 4096
+
+# Deployment recommendations by use case
+use_cases:
+  quick_testing:
+    model: "glm-4-9b"
+    tp_size: 2
+    max_profiles: 10
+    samples_per_profile: 1
+
+  small_dataset:
+    model: "qwen2.5-14b"
+    tp_size: 4
+    max_profiles: 100
+    samples_per_profile: 2
+
+  full_production:
+    model: "minimax-m2"
+    tp_size: 8
+    max_profiles: null  # all
+    samples_per_profile: 2
+    include_cm: true

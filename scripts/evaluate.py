@@ -62,12 +62,12 @@ def format_prompt(sample):
     """Format sample into prompt"""
     profile_str = json.dumps(sample['character_profile'], indent=2)
 
-    prompt = f"""You are roleplaying as {sample['character']}.
+    prompt = f"""You are roleplaying as {sample['character_name']}.
 
 Character Profile:
 {profile_str}
 
-User Query: {sample['query']}
+User Query: {sample['question']}
 
 Please provide a detailed response with step-by-step reasoning, staying in character.
 
@@ -182,7 +182,7 @@ def main():
         eval_sample = {
             "response": response,
             "character_profile": sample.get("character_profile", {}),
-            "query": sample.get("query", ""),
+            "query": sample.get("question", ""),
             "conversation_history": sample.get("conversation_history", None)
         }
 

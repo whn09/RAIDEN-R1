@@ -118,11 +118,12 @@ class GRPOTrainer:
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
 
+        # Note: Don't use device_map="auto" with accelerate distributed training
+        # Accelerate will handle device placement
         model = AutoModelForCausalLM.from_pretrained(
             self.config.model_name,
             torch_dtype=torch.bfloat16 if self.config.use_bf16 else torch.float32,
-            trust_remote_code=True,
-            device_map="auto"
+            trust_remote_code=True
         )
 
         if self.config.gradient_checkpointing:
@@ -254,22 +255,28 @@ class GRPOTrainer:
             padding=True
         ).to(self.model.device)
 
+        # Unwrap model for generation (needed for DistributedDataParallel)
+        unwrapped_model = self.accelerator.unwrap_model(self.model)
+
+        # Generate multiple responses in parallel using num_return_sequences
+        # This is MUCH faster than sequential generation
+        with torch.no_grad():
+            outputs = unwrapped_model.generate(
+                **inputs,
+                max_new_tokens=512,
+                temperature=self.config.temperature,
+                top_p=self.config.top_p,
+                do_sample=True,
+                num_return_sequences=self.config.num_samples_per_prompt,  # Generate all at once!
+                pad_token_id=self.tokenizer.pad_token_id
+            )
+
+        # Decode all responses
         responses = []
-
-        # Generate multiple responses with sampling
-        for _ in range(self.config.num_samples_per_prompt):
-            with torch.no_grad():
-                outputs = self.model.generate(
-                    **inputs,
-                    max_new_tokens=512,
-                    temperature=self.config.temperature,
-                    top_p=self.config.top_p,
-                    do_sample=True,
-                    pad_token_id=self.tokenizer.pad_token_id
-                )
-
+        input_length = inputs['input_ids'].shape[1]
+        for output in outputs:
             response = self.tokenizer.decode(
-                outputs[0][inputs['input_ids'].shape[1]:],
+                output[input_length:],
                 skip_special_tokens=True
             )
             responses.append(response)
@@ -280,12 +287,12 @@ class GRPOTrainer:
         """Format a sample into a prompt for the model"""
         profile_str = json.dumps(sample.character_profile, indent=2)
 
-        prompt = f"""You are roleplaying as {sample.character}.
+        prompt = f"""You are roleplaying as {sample.character_name}.
 
 Character Profile:
 {profile_str}
 
-User Query: {sample.query}
+User Query: {sample.question}
 
 Please provide a detailed response with step-by-step reasoning, staying in character.
 
@@ -301,11 +308,28 @@ Response:"""
         """Calculate VRAR rewards for all responses"""
         rewards = []
 
+        # Construct ground_truth in the format expected by VRAR calculator
+        ground_truth = {
+            "answer": sample.answer,
+            "key_terms": sample.keywords,
+            "terms": {}  # For multi-term validation, can be extended
+        }
+
+        # Map validation_method to validation_type expected by VRAR
+        validation_type_map = {
+            "single_term_validation": "single_term",
+            "multi_term_parsing": "multi_term"
+        }
+        validation_type = validation_type_map.get(
+            sample.validation_method,
+            "single_term"  # default
+        )
+
         for response in responses:
             reward_result = self.reward_calculator.calculate_reward(
                 response=response,
-                ground_truth=sample.ground_truth,
-                validation_type=sample.validation_type
+                ground_truth=ground_truth,
+                validation_type=validation_type
             )
             rewards.append(reward_result.total_reward)
 
@@ -390,10 +414,27 @@ Response:"""
                 best_response = responses[0]  # Use first sample
 
                 # Calculate reward
+                # Construct ground_truth in the format expected by VRAR calculator
+                ground_truth = {
+                    "answer": sample.answer,
+                    "key_terms": sample.keywords,
+                    "terms": {}
+                }
+
+                # Map validation_method to validation_type expected by VRAR
+                validation_type_map = {
+                    "single_term_validation": "single_term",
+                    "multi_term_parsing": "multi_term"
+                }
+                validation_type = validation_type_map.get(
+                    sample.validation_method,
+                    "single_term"
+                )
+
                 reward_result = self.reward_calculator.calculate_reward(
                     response=best_response,
-                    ground_truth=sample.ground_truth,
-                    validation_type=sample.validation_type
+                    ground_truth=ground_truth,
+                    validation_type=validation_type
                 )
                 total_reward += reward_result.total_reward
 

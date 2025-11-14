@@ -7,6 +7,7 @@ Trains a model using GRPO with VRAR rewards
 
 import argparse
 import json
+import yaml
 from pathlib import Path
 import sys
 
@@ -38,11 +39,19 @@ def main():
         description="Train RAIDEN-R1 model with GRPO"
     )
 
+    # Config file argument
+    parser.add_argument(
+        "--config",
+        type=str,
+        default=None,
+        help="Path to YAML configuration file"
+    )
+
     # Dataset arguments
     parser.add_argument(
         "--train_data",
         type=str,
-        required=True,
+        default=None,
         help="Path to training dataset (JSON file)"
     )
     parser.add_argument(
@@ -133,6 +142,21 @@ def main():
     )
 
     args = parser.parse_args()
+
+    # Load config file if provided
+    if args.config:
+        print(f"Loading configuration from: {args.config}")
+        with open(args.config, 'r') as f:
+            config_dict = yaml.safe_load(f)
+
+        # Override args with config values (command line args take precedence)
+        for key, value in config_dict.items():
+            if not hasattr(args, key) or getattr(args, key) is None:
+                setattr(args, key, value)
+
+    # Check required arguments
+    if not args.train_data:
+        parser.error("--train_data is required (either via command line or config file)")
 
     print("="*60)
     print("RAIDEN-R1 Training with GRPO")

@@ -5,14 +5,15 @@ model_name: "Qwen/Qwen2.5-14B-Instruct"  # Base model
 
 # Training Hyperparameters
 learning_rate: 3.0e-6
-batch_size: 4  # Per GPU
+batch_size: 8  # Per GPU (increased for better GPU utilization)
 num_epochs: 1
-gradient_accumulation_steps: 1
+gradient_accumulation_steps: 2  # Total effective batch = 8 * 8 GPUs * 2 = 128
 max_length: 2048
 
 # GRPO Specific
 num_samples_per_prompt: 4  # Number of responses per prompt for group sampling
 kl_penalty: 0.1  # KL divergence penalty coefficient
+max_new_tokens: 256  # Maximum tokens per response (reduced from 512 for speed)
 
 # Generation Parameters
 temperature: 0.7
@@ -34,8 +35,8 @@ eval_steps: 50
 warmup_steps: 100
 
 # Dataset
-train_data: "./data/train_dataset.json"
-eval_data: "./data/eval_dataset.json"
+train_data: "./data/test_training/train.json"
+eval_data: "./data/test_training/validation.json"
 
 # Evaluation Weights
 sbk_weight: 0.5  # Script-Based Knowledge weight
