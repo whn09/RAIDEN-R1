@@ -13,7 +13,7 @@ import torch
 import sys
 sys.path.append(str(Path(__file__).parent.parent))
 
-from rewards.vrar import VRARCalculator, RoleAwarenessValidator
+from rewards.vrar import VRARCalculator
 from data.collection import RolePlayingSample
 
 
@@ -140,7 +140,6 @@ class RAIDENRewardFunction:
             accuracy_weight=accuracy_weight,
             format_weight=format_weight
         )
-        self.validator = RoleAwarenessValidator()
         self.dataset_metadata = dataset_metadata or {}
         # Add __name__ attribute required by TRL's GRPOTrainer
         self.__name__ = "RAIDEN_VRAR"
@@ -198,19 +197,23 @@ class RAIDENRewardFunction:
                     rewards.append(reward)
                     continue
 
-                # Validate answer
-                validation_result = self.validator.validate_answer(
-                    response=completion,
-                    keywords=keywords,
-                    validation_method=validation_method
-                )
+                # Prepare ground truth dictionary for VRAR calculator
+                ground_truth = {
+                    "answer": expected_answer,
+                    "key_terms": keywords,
+                }
 
                 # Calculate VRAR reward
-                reward = self.vrar_calculator.calculate_reward(
+                # Use single_term or multi_term based on validation_method
+                validation_type = "single_term" if "single" in validation_method else "multi_term"
+
+                reward_result = self.vrar_calculator.calculate_reward(
                     response=completion,
-                    keywords=keywords,
-                    validation_result=validation_result
+                    ground_truth=ground_truth,
+                    validation_type=validation_type
                 )
+
+                reward = reward_result.total_reward
 
                 rewards.append(reward)
 
