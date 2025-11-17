@@ -164,6 +164,13 @@ class RAIDENRewardFunction:
 
         for i, (prompt_data, completion) in enumerate(zip(prompts, completions)):
             try:
+                # Handle completion format - it might be a list of tokens or a string
+                if isinstance(completion, list):
+                    # If it's a list, join it into a string
+                    completion_text = " ".join(str(x) for x in completion)
+                else:
+                    completion_text = str(completion)
+
                 # Handle different prompt formats
                 if isinstance(prompt_data, dict):
                     # If it's a dict, extract metadata directly
@@ -193,7 +200,7 @@ class RAIDENRewardFunction:
 
                 # If no keywords available, give a default positive reward for non-empty completions
                 if not keywords:
-                    reward = 1.0 if len(completion.strip()) > 10 else 0.5
+                    reward = 1.0 if len(completion_text.strip()) > 10 else 0.5
                     rewards.append(reward)
                     continue
 
@@ -208,7 +215,7 @@ class RAIDENRewardFunction:
                 validation_type = "single_term" if "single" in validation_method else "multi_term"
 
                 reward_result = self.vrar_calculator.calculate_reward(
-                    response=completion,
+                    response=completion_text,
                     ground_truth=ground_truth,
                     validation_type=validation_type
                 )
