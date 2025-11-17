@@ -1,25 +1,32 @@
 # OpenR1-based RAIDEN-R1 Training Configuration
 # This configuration uses OpenR1's GRPO implementation
+#
+# IMPORTANT: Model Size Selection
+# - For 140GB GPUs (H800): Use Qwen2.5-7B-Instruct (current default)
+# - For 188GB+ GPUs (H200): Can use Qwen2.5-14B-Instruct
+# GRPO requires significantly more memory than standard training due to
+# generating multiple responses per prompt (num_samples_per_prompt=4)
 
 # Data paths
 train_data_path: "./data/training/train.json"
 eval_data_path: "./data/training/validation.json"
 
 # Model
-model_name_or_path: "Qwen/Qwen2.5-14B-Instruct"
+model_name_or_path: "Qwen/Qwen2.5-14B-Instruct"  # For DeepSpeed ZeRO-3 with CPU offload
+# model_name_or_path: "Qwen/Qwen2.5-7B-Instruct"  # Alternative for 140GB GPUs without DeepSpeed
 
 # VRAR Reward weights
 accuracy_weight: 0.7
 format_weight: 0.3
 
 # GRPO parameters (will be mapped to TRL's naming: num_generations, beta)
-num_samples_per_prompt: 2  # Number of responses to sample per prompt (maps to num_generations) - reduced to save memory
+num_samples_per_prompt: 2  # Number of responses to sample per prompt (reduced for 14B + GRPO)
 kl_penalty: 0.1            # KL divergence penalty coefficient (maps to beta)
 
-# Training hyperparameters
+# Training hyperparameters (optimized for DeepSpeed ZeRO-3 + 14B model)
 num_train_epochs: 1
-per_device_train_batch_size: 1  # Per GPU batch size (reduced to 1 for GRPO memory requirements, effective: 1 * 8 GPUs * 8 = 64)
-gradient_accumulation_steps: 8  # Increased to maintain effective batch size
+per_device_train_batch_size: 1  # Minimum for GRPO with 14B
+gradient_accumulation_steps: 8  # Increased to maintain effective batch size (1*8*8=64)
 learning_rate: 3.0e-6
 warmup_steps: 100
 
