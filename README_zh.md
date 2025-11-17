@@ -131,7 +131,10 @@ cd ..
 # 验证安装
 python scripts/test_openr1_integration.py
 
-# 使用OpenR1训练
+# 使用OpenR1训练（单GPU）
+python scripts/train_with_openr1.py configs/openr1_config.yaml
+
+# 或使用命令行参数
 python scripts/train_with_openr1.py \
     --train_data_path ./data/training/train.json \
     --eval_data_path ./data/training/validation.json \
@@ -142,8 +145,13 @@ python scripts/train_with_openr1.py \
     --gradient_accumulation_steps 2 \
     --learning_rate 3e-6
 
-# 或使用配置文件
-python scripts/train_with_openr1.py configs/openr1_config.yaml
+# 多GPU训练（推荐，8x H200/H800）
+accelerate launch --config_file accelerate_config.yaml \
+    scripts/train_with_openr1.py configs/openr1_config.yaml
+
+# 监控训练
+watch -n 1 nvidia-smi
+tail -f outputs_openr1/training.log
 ```
 
 **对比**:

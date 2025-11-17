@@ -130,14 +130,18 @@ python scripts/generate_data_with_sglang.py \
 ### 4. Train
 
 ```bash
-# Simple command line
+# Single GPU
+python scripts/train_with_openr1.py configs/openr1_config.yaml
+
+# Multi-GPU (recommended, 8x H200/H800)
+accelerate launch --config_file accelerate_config.yaml \
+    scripts/train_with_openr1.py configs/openr1_config.yaml
+
+# Or with command-line arguments
 python scripts/train_with_openr1.py \
     --train_data_path ./data/training/train.json \
     --model_name_or_path Qwen/Qwen2.5-14B-Instruct \
     --output_dir ./outputs_openr1
-
-# Or with config
-python scripts/train_with_openr1.py configs/openr1_config.yaml
 ```
 
 ## When to Use Which Implementation?

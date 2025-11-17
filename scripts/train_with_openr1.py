@@ -227,12 +227,25 @@ def main():
     if args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
 
+    # Create metadata mapping for reward function
+    print("\nCreating metadata mapping...")
+    dataset_metadata = {}
+    for sample in train_dataset:
+        # Create a unique key from the prompt
+        prompt_key = str(sample.get("prompt", ""))
+        dataset_metadata[prompt_key] = {
+            "keywords": sample.get("keywords", []),
+            "validation_method": sample.get("validation_method", "single_term_validation"),
+            "expected_answer": sample.get("expected_answer", ""),
+        }
+
     # Create reward function
     print("\nInitializing VRAR reward function...")
     reward_function = create_raiden_reward_function(
         tokenizer=tokenizer,
         accuracy_weight=args.accuracy_weight,
-        format_weight=args.format_weight
+        format_weight=args.format_weight,
+        dataset_metadata=dataset_metadata
     )
 
     # Configure GRPO

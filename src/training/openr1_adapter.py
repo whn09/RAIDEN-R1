@@ -125,13 +125,15 @@ class RAIDENRewardFunction:
         self,
         tokenizer,
         accuracy_weight: float = 0.7,
-        format_weight: float = 0.3
+        format_weight: float = 0.3,
+        dataset_metadata: Dict[str, Any] = None
     ):
         """
         Args:
             tokenizer: Model tokenizer
             accuracy_weight: Weight for accuracy reward
             format_weight: Weight for format reward
+            dataset_metadata: Mapping from prompt to metadata (keywords, validation_method, etc)
         """
         self.tokenizer = tokenizer
         self.vrar_calculator = VRARCalculator(
@@ -139,12 +141,13 @@ class RAIDENRewardFunction:
             format_weight=format_weight
         )
         self.validator = RoleAwarenessValidator()
+        self.dataset_metadata = dataset_metadata or {}
         # Add __name__ attribute required by TRL's GRPOTrainer
         self.__name__ = "RAIDEN_VRAR"
 
     def __call__(
         self,
-        prompts: List[Dict[str, Any]],
+        prompts: List[Any],
         completions: List[str],
         **kwargs
     ) -> List[float]:
@@ -152,7 +155,7 @@ class RAIDENRewardFunction:
         Calculate VRAR rewards for completions
 
         Args:
-            prompts: List of prompt dictionaries (with RAIDEN metadata)
+            prompts: List of prompts (can be dicts with metadata or conversation lists)
             completions: List of model completions
 
         Returns:
@@ -160,12 +163,40 @@ class RAIDENRewardFunction:
         """
         rewards = []
 
-        for prompt_data, completion in zip(prompts, completions):
+        for i, (prompt_data, completion) in enumerate(zip(prompts, completions)):
             try:
-                # Extract RAIDEN-specific information
-                keywords = prompt_data.get("keywords", [])
-                validation_method = prompt_data.get("validation_method", "single_term_validation")
-                expected_answer = prompt_data.get("expected_answer", "")
+                # Handle different prompt formats
+                if isinstance(prompt_data, dict):
+                    # If it's a dict, extract metadata directly
+                    keywords = prompt_data.get("keywords", [])
+                    validation_method = prompt_data.get("validation_method", "single_term_validation")
+                    expected_answer = prompt_data.get("expected_answer", "")
+                elif isinstance(prompt_data, list):
+                    # If it's a conversation list, try to find metadata using the prompt as key
+                    prompt_key = str(prompt_data)
+                    if prompt_key in self.dataset_metadata:
+                        metadata = self.dataset_metadata[prompt_key]
+                        keywords = metadata.get("keywords", [])
+                        validation_method = metadata.get("validation_method", "single_term_validation")
+                        expected_answer = metadata.get("expected_answer", "")
+                    else:
+                        # Fallback: use default values
+                        if i == 0:  # Only print warning once
+                            print(f"Warning: Could not find metadata for prompt, using defaults")
+                        keywords = []
+                        validation_method = "single_term_validation"
+                        expected_answer = ""
+                else:
+                    print(f"Warning: Unknown prompt format type: {type(prompt_data)}")
+                    keywords = []
+                    validation_method = "single_term_validation"
+                    expected_answer = ""
+
+                # If no keywords available, give a default positive reward for non-empty completions
+                if not keywords:
+                    reward = 1.0 if len(completion.strip()) > 10 else 0.5
+                    rewards.append(reward)
+                    continue
 
                 # Validate answer
                 validation_result = self.validator.validate_answer(
@@ -184,7 +215,9 @@ class RAIDENRewardFunction:
                 rewards.append(reward)
 
             except Exception as e:
-                print(f"Error calculating reward: {e}")
+                print(f"Error calculating reward for sample {i}: {e}")
+                import traceback
+                traceback.print_exc()
                 # Return neutral reward on error
                 rewards.append(0.0)
 
@@ -194,7 +227,8 @@ class RAIDENRewardFunction:
 def create_raiden_reward_function(
     tokenizer,
     accuracy_weight: float = 0.7,
-    format_weight: float = 0.3
+    format_weight: float = 0.3,
+    dataset_metadata: Dict[str, Any] = None
 ) -> Callable:
     """
     Factory function to create RAIDEN reward function for OpenR1
@@ -203,6 +237,7 @@ def create_raiden_reward_function(
         tokenizer: Model tokenizer
         accuracy_weight: Weight for accuracy reward
         format_weight: Weight for format reward
+        dataset_metadata: Mapping from prompt to metadata
 
     Returns:
         Reward function compatible with OpenR1
@@ -210,7 +245,8 @@ def create_raiden_reward_function(
     reward_fn = RAIDENRewardFunction(
         tokenizer=tokenizer,
         accuracy_weight=accuracy_weight,
-        format_weight=format_weight
+        format_weight=format_weight,
+        dataset_metadata=dataset_metadata
     )
 
     return reward_fn

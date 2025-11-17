@@ -129,7 +129,10 @@ cd ..
 # Verify installation
 python scripts/test_openr1_integration.py
 
-# Train with OpenR1
+# Train with OpenR1 (single GPU)
+python scripts/train_with_openr1.py configs/openr1_config.yaml
+
+# Or with command-line arguments
 python scripts/train_with_openr1.py \
     --train_data_path ./data/training/train.json \
     --eval_data_path ./data/training/validation.json \
@@ -140,8 +143,13 @@ python scripts/train_with_openr1.py \
     --gradient_accumulation_steps 2 \
     --learning_rate 3e-6
 
-# Or use config file
-python scripts/train_with_openr1.py configs/openr1_config.yaml
+# Multi-GPU training (recommended, 8x H200/H800)
+accelerate launch --config_file accelerate_config.yaml \
+    scripts/train_with_openr1.py configs/openr1_config.yaml
+
+# Monitor training
+watch -n 1 nvidia-smi
+tail -f outputs_openr1/training.log
 ```
 
 **Comparison**:

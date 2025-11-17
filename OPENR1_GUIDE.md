@@ -67,25 +67,38 @@ learning_rate: 3.0e-6
 
 ### 3. Train
 
+**Single GPU Training:**
 ```bash
-# Single command
+# With config file (recommended)
+python scripts/train_with_openr1.py configs/openr1_config.yaml
+
+# Or with command-line arguments
 python scripts/train_with_openr1.py \
     --train_data_path ./data/training/train.json \
     --eval_data_path ./data/training/validation.json \
     --model_name_or_path Qwen/Qwen2.5-14B-Instruct \
     --output_dir ./outputs_openr1
-
-# Or with config file (recommended)
-python scripts/train_with_openr1.py configs/openr1_config.yaml
 ```
+
+**Multi-GPU Training (Recommended):**
+```bash
+# Use accelerate for distributed training (8x H200/H800)
+accelerate launch --config_file accelerate_config.yaml \
+    scripts/train_with_openr1.py configs/openr1_config.yaml
+```
+
+The `accelerate_config.yaml` is already configured for 8 GPUs with the following settings:
+- `num_processes: 8` - Use all 8 GPUs
+- `mixed_precision: bf16` - BFloat16 precision
+- `distributed_type: MULTI_GPU` - Multi-GPU training
 
 ### 4. Monitor
 
 ```bash
-# Watch GPU usage
+# Watch GPU usage (all 8 GPUs)
 watch -n 1 nvidia-smi
 
-# View logs
+# View training logs
 tail -f outputs_openr1/training.log
 ```
 
