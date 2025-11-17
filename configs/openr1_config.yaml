@@ -1,0 +1,42 @@
+# OpenR1-based RAIDEN-R1 Training Configuration
+# This configuration uses OpenR1's GRPO implementation
+
+# Data paths
+train_data_path: "./data/training/train.json"
+eval_data_path: "./data/training/validation.json"
+
+# Model
+model_name_or_path: "Qwen/Qwen2.5-14B-Instruct"
+
+# VRAR Reward weights
+accuracy_weight: 0.7
+format_weight: 0.3
+
+# GRPO parameters
+num_samples_per_prompt: 4  # Number of responses to sample per prompt
+kl_penalty: 0.1            # KL divergence penalty coefficient
+
+# Training hyperparameters
+num_train_epochs: 1
+per_device_train_batch_size: 4
+gradient_accumulation_steps: 2
+learning_rate: 3.0e-6
+warmup_steps: 100
+
+# Logging and evaluation
+logging_steps: 10
+save_steps: 100
+eval_steps: 50
+
+# Precision and optimization
+bf16: true
+gradient_checkpointing: true
+
+# Output
+output_dir: "./outputs_openr1"
+
+# System prompt for role-playing (optional)
+system_prompt: "You are a role-playing AI assistant. Answer questions in character based on the provided character profile. Stay consistent with the character's personality, background, and knowledge."
+
+# Random seed
+seed: 42

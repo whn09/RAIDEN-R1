@@ -95,6 +95,14 @@ python scripts/generate_data_with_bedrock.py \
 
 ### 3. Training
 
+RAIDEN-R1 provides two training implementations:
+
+> 📖 **Detailed OpenR1 Guide**: See [OPENR1_GUIDE.md](OPENR1_GUIDE.md) for complete documentation
+
+#### Option A: Custom GRPO Implementation (Default)
+
+Simple and easy to customize:
+
 ```bash
 # Multi-GPU training (8x H200/H800)
 accelerate launch --config_file accelerate_config.yaml \
@@ -105,12 +113,40 @@ watch -n 1 nvidia-smi
 tail -f outputs/training.log
 ```
 
-**Training Configuration** (`configs/grpo_config.yaml`):
+#### Option B: OpenR1 GRPO (Paper-Accurate ⭐)
+
+Uses Hugging Face's OpenR1 library as mentioned in the paper:
+
+```bash
+# Install OpenR1
+pip install open-r1
+
+# Train with OpenR1
+python scripts/train_with_openr1.py \
+    --train_data_path ./data/training/train.json \
+    --eval_data_path ./data/training/validation.json \
+    --model_name_or_path Qwen/Qwen2.5-14B-Instruct \
+    --output_dir ./outputs_openr1 \
+    --num_train_epochs 1 \
+    --per_device_train_batch_size 4 \
+    --gradient_accumulation_steps 2 \
+    --learning_rate 3e-6
+
+# Or use config file
+python scripts/train_with_openr1.py configs/openr1_config.yaml
+```
+
+**Comparison**:
+- **Custom GRPO**: Simpler, easier to debug, good for experimentation
+- **OpenR1**: Matches paper implementation, optimized performance, community-maintained
+
+**Training Configuration** (`configs/grpo_config.yaml` or `configs/openr1_config.yaml`):
 - Base Model: `Qwen/Qwen2.5-14B-Instruct`
 - Learning Rate: `3e-6` with cosine scheduler
-- Batch Size: `8` per GPU (effective: 128 with 8 GPUs)
+- Batch Size: `4` per GPU (effective: 64 with 8 GPUs)
 - Precision: `bf16`
 - Epochs: `1`
+- GRPO Samples: `4` per prompt
 
 ### 4. Evaluation
 
