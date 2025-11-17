@@ -267,14 +267,49 @@ Ensure your data follows RAIDEN format:
 - Use `generate_data_with_sglang.py` to generate compatible data
 - Check that JSON has required fields: `character_name`, `question`, `answer`, `keywords`
 
-### Memory Issues
+### Memory Issues (CUDA Out of Memory)
 
-Reduce batch size or enable gradient checkpointing:
+**Understanding GRPO Memory Requirements:**
 
+GRPO requires significantly more memory than standard training because it:
+1. Generates multiple responses per prompt (`num_samples_per_prompt`)
+2. Stores all responses in memory for reward calculation
+3. Computes gradients for policy optimization
+
+**Memory Requirements by Model Size** (per GPU, bf16):
+- Qwen2.5-7B: ~70-80GB with GRPO (num_samples_per_prompt=2)
+- Qwen2.5-14B: ~140-160GB with GRPO (num_samples_per_prompt=2)
+- Qwen2.5-14B: ~180-200GB+ with GRPO (num_samples_per_prompt=4)
+
+**Solution 1: Use Smaller Model (Recommended for 140GB GPUs)**
 ```yaml
-per_device_train_batch_size: 2  # Reduce from 4
-gradient_checkpointing: true     # Enable if not already
+model_name_or_path: "Qwen/Qwen2.5-7B-Instruct"  # Instead of 14B
 ```
+
+**Solution 2: Reduce Memory Usage**
+```yaml
+# Reduce GRPO sampling (biggest impact)
+num_samples_per_prompt: 2  # Reduce from 4 (saves 50% memory)
+
+# Reduce batch size
+per_device_train_batch_size: 1  # Minimum
+gradient_accumulation_steps: 8  # Increase to maintain effective batch size
+
+# Enable gradient checkpointing (already enabled by default)
+gradient_checkpointing: true
+```
+
+**Solution 3: Optimize Memory Allocation**
+```bash
+# Set PyTorch memory allocation strategy before training
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+# Then run training
+accelerate launch --config_file accelerate_config.yaml \
+    scripts/train_with_openr1.py configs/openr1_config.yaml
+```
+
+**Note**: Even with all optimizations, Qwen2.5-14B may not fit on 140GB GPUs with GRPO. Use Qwen2.5-7B or larger GPUs (e.g., H200 with 188GB).
 
 ### Performance Tips
 

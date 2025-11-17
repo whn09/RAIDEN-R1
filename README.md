@@ -58,6 +58,12 @@ pip install -r requirements.txt
 - Transformers
 - 8x NVIDIA H800/H200 GPUs for training
 
+**GPU Memory Requirements**:
+- Custom GRPO: ~100GB per GPU for Qwen2.5-14B (bf16)
+- OpenR1 GRPO: ~140-160GB per GPU for Qwen2.5-14B (higher due to multiple response generation)
+  - Recommended: Use Qwen2.5-7B for 140GB GPUs
+  - Or use fewer generations (`num_samples_per_prompt: 2` instead of 4)
+
 ### 2. Data Generation
 
 **Recommended: SGLang + GLM-4.6** (10-100x faster than cloud APIs)

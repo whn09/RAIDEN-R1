@@ -60,6 +60,12 @@ pip install -r requirements.txt
 - Transformers
 - 训练需要 8x NVIDIA H800/H200 GPU
 
+**GPU显存要求**:
+- 自定义GRPO: Qwen2.5-14B (bf16) 每卡约需100GB显存
+- OpenR1 GRPO: Qwen2.5-14B 每卡约需140-160GB显存（因需生成多个响应）
+  - 建议：对于140GB显存的GPU，使用Qwen2.5-7B模型
+  - 或减少生成数量（`num_samples_per_prompt: 2` 而非 4）
+
 ### 2. 数据生成
 
 **推荐：SGLang + GLM-4.6**（比云API快10-100倍）
