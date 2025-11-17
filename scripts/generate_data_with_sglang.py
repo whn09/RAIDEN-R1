@@ -87,12 +87,19 @@ def main():
         type=str,
         default="zh",
         choices=["zh", "ja", "en", "ko"],
-        help="Default language for generation (zh=Chinese, ja=Japanese, en=English, ko=Korean)"
+        help="Language for generation (zh=Chinese, ja=Japanese, en=English, ko=Korean). Questions and answers will be generated in this language."
     )
     parser.add_argument(
-        "--no_auto_detect",
+        "--auto_detect",
         action="store_true",
-        help="Disable automatic language detection from character profiles"
+        help="Enable automatic language detection from character profiles (overrides --language)"
+    )
+
+    # Model parameters
+    parser.add_argument(
+        "--enable_thinking",
+        action="store_true",
+        help="Enable thinking mode for models that support it (GLM-4.6, MiniMax M2, etc.). By default thinking is disabled for cleaner responses."
     )
 
     # Dataset parameters
@@ -118,7 +125,8 @@ def main():
     print(f"  SGLang URL: {args.base_url}")
     print(f"  Model: {args.model_name or 'auto-detect'}")
     print(f"  Language: {args.language}")
-    print(f"  Auto-detect language: {not args.no_auto_detect}")
+    print(f"  Auto-detect language: {args.auto_detect}")
+    print(f"  Enable thinking: {args.enable_thinking}")
     print("=" * 70)
 
     # Initialize generator
@@ -129,7 +137,8 @@ def main():
             model_name=args.model_name,
             timeout=args.timeout,
             language=args.language,
-            auto_detect_language=not args.no_auto_detect
+            auto_detect_language=args.auto_detect,
+            enable_thinking=args.enable_thinking
         )
     except Exception as e:
         print(f"Error: Failed to initialize SGLang generator: {e}")
