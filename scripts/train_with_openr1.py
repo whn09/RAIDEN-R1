@@ -149,9 +149,16 @@ def main():
         print("Please install it with: pip install open-r1")
         sys.exit(1)
 
-    # Parse arguments
+    # Parse arguments - support both config files and command line
     parser = HfArgumentParser(RAIDENTrainingArguments)
-    args = parser.parse_args_into_dataclasses()[0]
+
+    # Check if first argument is a config file
+    if len(sys.argv) > 1 and (sys.argv[1].endswith('.yaml') or sys.argv[1].endswith('.yml')):
+        args = parser.parse_yaml_file(yaml_file=sys.argv[1])[0]
+    elif len(sys.argv) > 1 and sys.argv[1].endswith('.json'):
+        args = parser.parse_json_file(json_file=sys.argv[1])[0]
+    else:
+        args = parser.parse_args_into_dataclasses()[0]
 
     # Set seed
     set_seed(args.seed)
