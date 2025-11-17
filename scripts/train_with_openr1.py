@@ -94,6 +94,12 @@ class RAIDENTrainingArguments:
         metadata={"help": "Output directory"}
     )
 
+    # Logging
+    report_to: Optional[list] = field(
+        default=None,
+        metadata={"help": "List of integrations to report to (wandb, tensorboard, etc). Empty list disables all."}
+    )
+
     # Training
     num_train_epochs: int = field(
         default=1,
@@ -243,22 +249,25 @@ def main():
         eval_steps=args.eval_steps if eval_dataset else None,
         bf16=args.bf16,
         gradient_checkpointing=args.gradient_checkpointing,
-        # GRPO specific
-        num_samples_per_prompt=args.num_samples_per_prompt,
-        kl_penalty=args.kl_penalty,
-        max_length=2048,
+        report_to=args.report_to if args.report_to is not None else [],
+        # GRPO specific parameters (using TRL naming)
+        num_generations=args.num_samples_per_prompt,  # Number of responses per prompt
+        beta=args.kl_penalty,  # KL divergence penalty coefficient
+        max_completion_length=2048,
         temperature=0.7,
         top_p=0.9,
+        system_prompt=args.system_prompt,
     )
 
     # Create trainer
+    print("\nInitializing GRPO trainer...")
     trainer = GRPOTrainer(
         model=model,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,  # TRL uses 'processing_class' for tokenizer
         args=grpo_config,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
-        reward_function=reward_function,
+        reward_funcs=reward_function,  # TRL uses 'reward_funcs'
     )
 
     # Train

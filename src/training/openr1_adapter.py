@@ -139,6 +139,8 @@ class RAIDENRewardFunction:
             format_weight=format_weight
         )
         self.validator = RoleAwarenessValidator()
+        # Add __name__ attribute required by TRL's GRPOTrainer
+        self.__name__ = "RAIDEN_VRAR"
 
     def __call__(
         self,

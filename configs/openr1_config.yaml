@@ -12,9 +12,9 @@ model_name_or_path: "Qwen/Qwen2.5-14B-Instruct"
 accuracy_weight: 0.7
 format_weight: 0.3
 
-# GRPO parameters
-num_samples_per_prompt: 4  # Number of responses to sample per prompt
-kl_penalty: 0.1            # KL divergence penalty coefficient
+# GRPO parameters (will be mapped to TRL's naming: num_generations, beta)
+num_samples_per_prompt: 4  # Number of responses to sample per prompt (maps to num_generations)
+kl_penalty: 0.1            # KL divergence penalty coefficient (maps to beta)
 
 # Training hyperparameters
 num_train_epochs: 1
@@ -31,6 +31,9 @@ eval_steps: 50
 # Precision and optimization
 bf16: true
 gradient_checkpointing: true
+
+# Disable wandb logging (optional, set to false if you don't have wandb configured)
+report_to: []  # Empty list disables all external reporting
 
 # Output
 output_dir: "./outputs_openr1"
