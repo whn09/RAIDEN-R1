@@ -10,7 +10,7 @@ import yaml
 import argparse
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, List
 
 import torch
 from transformers import (
@@ -95,7 +95,7 @@ class RAIDENTrainingArguments:
     )
 
     # Logging
-    report_to: Optional[list] = field(
+    report_to: Optional[List[str]] = field(
         default=None,
         metadata={"help": "List of integrations to report to (wandb, tensorboard, etc). Empty list disables all."}
     )
