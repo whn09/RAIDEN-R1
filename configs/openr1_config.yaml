@@ -13,13 +13,13 @@ accuracy_weight: 0.7
 format_weight: 0.3
 
 # GRPO parameters (will be mapped to TRL's naming: num_generations, beta)
-num_samples_per_prompt: 4  # Number of responses to sample per prompt (maps to num_generations)
+num_samples_per_prompt: 2  # Number of responses to sample per prompt (maps to num_generations) - reduced to save memory
 kl_penalty: 0.1            # KL divergence penalty coefficient (maps to beta)
 
 # Training hyperparameters
 num_train_epochs: 1
-per_device_train_batch_size: 4  # Per GPU batch size (effective: 4 * 8 GPUs * 2 = 64)
-gradient_accumulation_steps: 2
+per_device_train_batch_size: 2  # Per GPU batch size (reduced from 4 to save memory, effective: 2 * 8 GPUs * 4 = 64)
+gradient_accumulation_steps: 4  # Increased to maintain effective batch size
 learning_rate: 3.0e-6
 warmup_steps: 100
 
