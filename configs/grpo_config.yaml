@@ -35,8 +35,8 @@ eval_steps: 50
 warmup_steps: 100
 
 # Dataset
-train_data: "./data/test_training/train.json"
-eval_data: "./data/test_training/validation.json"
+train_data: "./data/training/train.json"
+eval_data: "./data/training/validation.json"
 
 # Evaluation Weights
 sbk_weight: 0.5  # Script-Based Knowledge weight
