@@ -266,7 +266,7 @@ def main():
         # GRPO specific parameters (using TRL naming)
         num_generations=args.num_samples_per_prompt,  # Number of responses per prompt
         beta=args.kl_penalty,  # KL divergence penalty coefficient
-        max_completion_length=2048,
+        max_completion_length=1024,  # Reduced from 2048 to save memory
         temperature=0.7,
         top_p=0.9,
         system_prompt=args.system_prompt,
