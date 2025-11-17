@@ -21,11 +21,20 @@ def test_openr1_installation():
         import open_r1
         print("✓ OpenR1 is installed")
         print(f"  Version: {getattr(open_r1, '__version__', 'unknown')}")
+
+        # Test specific imports needed for training
+        from open_r1.configs import GRPOConfig
+        from trl import GRPOTrainer
+        print("✓ Required classes (GRPOConfig, GRPOTrainer) can be imported")
         return True
-    except ImportError:
-        print("✗ OpenR1 is not installed")
-        print("\nTo install OpenR1:")
-        print("  pip install open-r1")
+    except ImportError as e:
+        print(f"✗ OpenR1 or required dependencies not installed: {e}")
+        print("\nTo install OpenR1 (must install from source):")
+        print("  git clone https://github.com/huggingface/open-r1.git")
+        print("  cd open-r1")
+        print("  pip install -e \".[dev]\"")
+        print("  cd ..")
+        print("  pip install trl  # If not already installed")
         return False
 
 
@@ -188,7 +197,9 @@ def main():
         print("✗ Some tests failed. Please fix the issues above.")
         print("=" * 70)
         print("\nCommon fixes:")
-        print("  - Install OpenR1: pip install open-r1")
+        print("  - Install OpenR1 from source:")
+        print("    git clone https://github.com/huggingface/open-r1.git")
+        print("    cd open-r1 && pip install -e \".[dev]\" && cd ..")
         print("  - Install dependencies: pip install -r requirements.txt")
         print("  - Check Python version: Python 3.8+ required")
         return 1

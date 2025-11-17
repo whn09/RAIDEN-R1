@@ -31,10 +31,15 @@ from training.openr1_adapter import (
 )
 
 try:
-    from open_r1 import GRPOConfig, GRPOTrainer
+    from open_r1.configs import GRPOConfig
+    from trl import GRPOTrainer
     OPENR1_AVAILABLE = True
-except ImportError:
-    print("Warning: OpenR1 not installed. Please install with: pip install open-r1")
+except ImportError as e:
+    print(f"Warning: OpenR1 or TRL not installed: {e}")
+    print("Please install with:")
+    print("  1. git clone https://github.com/huggingface/open-r1.git")
+    print("  2. cd open-r1 && pip install -e \".[dev]\" && cd ..")
+    print("  3. pip install trl")
     OPENR1_AVAILABLE = False
 
 

@@ -14,15 +14,21 @@ This guide explains how to use OpenR1's GRPO implementation for training RAIDEN-
 
 ## Installation
 
-```bash
-# Install OpenR1
-pip install open-r1
+OpenR1 must be installed from source (not available on PyPI):
 
-# Or install from source for latest features
+```bash
+# Clone the repository
 git clone https://github.com/huggingface/open-r1.git
 cd open-r1
+
+# Install with development dependencies
+pip install -e ".[dev]"
+
+# Or install with minimal dependencies
 pip install -e .
 ```
+
+**Note**: OpenR1 requires Python 3.8+ and PyTorch 2.0+.
 
 ## Quick Start
 
@@ -230,9 +236,16 @@ trainer.train()
 ### ImportError: No module named 'open_r1'
 
 ```bash
-pip install open-r1
-# Or from source:
-pip install git+https://github.com/huggingface/open-r1.git
+# OpenR1 must be installed from source
+git clone https://github.com/huggingface/open-r1.git
+cd open-r1
+pip install -e ".[dev]"
+```
+
+If you already cloned the repo, make sure you're in the correct environment:
+```bash
+which python  # Check if you're in the right environment
+pip list | grep open-r1  # Verify installation
 ```
 
 ### Data Format Errors

@@ -2,6 +2,8 @@
 
 Implementation of the RAIDEN-R1 framework for improving role-awareness in large language models through Group Relative Policy Optimization (GRPO) with Verifiable Role-Awareness Rewards (VRAR).
 
+English | [简体中文](README_zh.md)
+
 ## Paper
 
 **Title**: RAIDEN-R1: Improving Role-awareness of LLMs via GRPO with Verifiable Reward
@@ -118,8 +120,14 @@ tail -f outputs/training.log
 Uses Hugging Face's OpenR1 library as mentioned in the paper:
 
 ```bash
-# Install OpenR1
-pip install open-r1
+# Install OpenR1 (must be from source)
+git clone https://github.com/huggingface/open-r1.git
+cd open-r1
+pip install -e ".[dev]"
+cd ..
+
+# Verify installation
+python scripts/test_openr1_integration.py
 
 # Train with OpenR1
 python scripts/train_with_openr1.py \

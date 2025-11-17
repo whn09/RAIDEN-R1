@@ -9,8 +9,10 @@ trl>=0.7.0
 peft>=0.7.0
 
 # OpenR1 (optional - for paper-accurate GRPO implementation)
-# Uncomment to use OpenR1-based training
-# open-r1>=0.1.0
+# OpenR1 must be installed from source:
+# git clone https://github.com/huggingface/open-r1.git
+# cd open-r1
+# pip install -e ".[dev]"
 
 # Data processing
 pandas>=2.0.0

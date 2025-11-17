@@ -106,7 +106,11 @@ Trained Model
 ### 1. Install OpenR1
 
 ```bash
-pip install open-r1
+# OpenR1 must be installed from source
+git clone https://github.com/huggingface/open-r1.git
+cd open-r1
+pip install -e ".[dev]"
+cd ..
 ```
 
 ### 2. Test Integration
@@ -204,7 +208,11 @@ Key GRPO parameters explained:
 
 1. **ImportError: No module named 'open_r1'**
    ```bash
-   pip install open-r1
+   # OpenR1 must be installed from source
+   git clone https://github.com/huggingface/open-r1.git
+   cd open-r1
+   pip install -e ".[dev]"
+   cd ..
    ```
 
 2. **CUDA out of memory**
