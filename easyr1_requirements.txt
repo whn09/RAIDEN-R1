@@ -1,0 +1,25 @@
+# Additional requirements for EasyR1 integration
+# Install with: pip install -r easyr1_requirements.txt
+
+# Core EasyR1/veRL framework
+# Note: EasyR1 must be installed from source:
+#   git clone https://github.com/hiyouga/EasyR1.git
+#   cd EasyR1 && pip install -e .
+
+# Additional dependencies (if not already installed)
+transformers>=4.54.0
+flash-attn>=2.4.3
+vllm>=0.8.3
+torch>=2.0.0
+ray>=2.0.0
+pydantic>=2.0.0
+jinja2>=3.0.0
+pyyaml>=6.0
+
+# For reward function
+# mathruler is optional if using math rewards (not needed for RAIDEN-R1)
+# mathruler>=0.1.0
+
+# Logging and monitoring (optional)
+tensorboard>=2.0.0
+# wandb>=0.15.0  # Uncomment if using Weights & Biases

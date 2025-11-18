@@ -1,0 +1,114 @@
+# EasyR1 Configuration for RAIDEN-R1
+# Training role-aware LLMs with GRPO and Verifiable Role-Awareness Rewards
+
+data:
+  train_files: ./data/easyr1/train.json
+  val_files: ./data/easyr1/validation.json
+  prompt_key: problem  # Key containing the question/prompt
+  answer_key: answer   # Key containing the ground truth answer
+  image_key: images    # Key for images (empty for text-only)
+  video_key: videos    # Key for videos (not used)
+  image_dir: null
+  video_fps: 2.0
+  max_prompt_length: 4096  # Increased for character profiles + conversation history
+  max_response_length: 2048
+  rollout_batch_size: 256  # Batch size for generation (adjust based on GPU memory)
+  mini_rollout_batch_size: null  # Auto-computed
+  val_batch_size: 512
+  format_prompt: ./easyr1/format_prompt/role_playing.jinja  # Our custom prompt template
+  override_chat_template: null
+  shuffle: true
+  seed: 42
+  min_pixels: null  # Not used for text-only
+  max_pixels: null  # Not used for text-only
+  filter_overlong_prompts: true
+
+algorithm:
+  adv_estimator: grpo  # Group Relative Policy Optimization
+  disable_kl: false
+  use_kl_loss: true
+  kl_penalty: low_var_kl  # Use low-variance KL penalty
+  kl_coef: 1.0e-2  # KL coefficient
+  online_filtering: false  # DAPO filtering (disabled by default)
+  filter_key: overall
+  filter_low: 0.01
+  filter_high: 0.99
+
+worker:
+  actor:
+    global_batch_size: 128  # Global training batch size
+    micro_batch_size_per_device_for_update: 1  # Micro-batch size for gradient updates
+    micro_batch_size_per_device_for_experience: 2  # Micro-batch size for experience collection
+    max_grad_norm: 1.0
+    padding_free: true  # Enable padding-free training for efficiency
+    dynamic_batching: true
+    ulysses_size: 1  # Ulysses parallelism (set to 1 for standard training)
+    model:
+      model_path: Qwen/Qwen2.5-14B-Instruct  # Base model (can change to 7B for smaller GPUs)
+      enable_gradient_checkpointing: true
+      trust_remote_code: false
+      freeze_vision_tower: false  # Not applicable for text-only
+    optim:
+      lr: 3.0e-6  # Learning rate (matching RAIDEN-R1 paper)
+      weight_decay: 1.0e-2
+      strategy: adamw  # Use adamw_bf16 for BF16 training
+      lr_warmup_ratio: 0.1  # 10% warmup
+    fsdp:
+      enable_full_shard: true  # Enable FSDP for multi-GPU training
+      enable_cpu_offload: false
+      enable_rank0_init: true
+      torch_dtype: auto  # Use bf16 for lower memory usage
+    offload:
+      offload_params: true  # Offload parameters to CPU (more CPU memory, less GPU)
+      offload_optimizer: true  # Offload optimizer to CPU
+
+  rollout:
+    n: 4  # Number of responses per prompt (GRPO samples)
+    temperature: 0.7  # Generation temperature
+    top_p: 0.9  # Nucleus sampling
+    limit_images: 0  # Not used for text-only
+    gpu_memory_utilization: 0.6  # vLLM GPU memory utilization
+    enforce_eager: false
+    enable_chunked_prefill: false
+    tensor_parallel_size: 2  # Tensor parallelism for vLLM (adjust based on GPU count)
+    disable_tqdm: false
+    val_override_config:
+      temperature: 0.6  # Lower temperature for validation
+      top_p: 0.95
+      n: 1  # Single response during validation
+
+  ref:
+    fsdp:
+      enable_full_shard: true
+      enable_cpu_offload: true  # Offload reference model to save GPU memory
+      enable_rank0_init: true
+      torch_dtype: auto
+    offload:
+      offload_params: false
+
+  reward:
+    reward_function: ./easyr1/reward_function/raiden_vrar.py:compute_score
+    reward_function_kwargs:
+      accuracy_weight: 0.5  # Weight for role-awareness accuracy
+      format_weight: 0.3    # Weight for format quality
+      thinking_weight: 0.2  # Weight for thinking/reasoning quality
+
+trainer:
+  total_epochs: 1  # Number of training epochs (1 epoch as per RAIDEN-R1)
+  max_steps: null  # Use epochs instead
+  project_name: raiden_r1_easyr1  # Project name for logging
+  experiment_name: qwen2_5_14b_raiden_grpo  # Experiment name
+  logger: ["file", "tensorboard"]  # Logging backends (add "wandb" if needed)
+  nnodes: 1  # Number of nodes (for multi-node training)
+  n_gpus_per_node: 8  # Number of GPUs per node
+  max_try_make_batch: 20  # Max attempts to create valid batch
+  val_freq: 5  # Validate every N steps (-1 to disable)
+  val_before_train: true  # Run validation before training
+  val_only: false  # Only run validation (no training)
+  val_generations_to_log: 3  # Number of validation samples to log
+  save_freq: 100  # Save checkpoint every N steps
+  save_limit: 3  # Keep only last N checkpoints (-1 for unlimited)
+  save_model_only: false  # Save full checkpoint (optimizer, scheduler, etc.)
+  save_checkpoint_path: ./checkpoints/easyr1/qwen2_5_14b_raiden
+  load_checkpoint_path: null  # Path to resume from checkpoint
+  find_last_checkpoint: true  # Auto-resume from last checkpoint

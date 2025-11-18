@@ -36,11 +36,21 @@ raiden-r1/
 │   └── rewards/
 │       └── vrar.py              # Verifiable Role-Awareness Rewards
 ├── configs/
-│   └── grpo_config.yaml         # Training configuration
+│   ├── grpo_config.yaml         # Custom GRPO training configuration
+│   ├── openr1_config.yaml       # OpenR1 training configuration
+│   └── easyr1_config.yaml       # EasyR1 training configuration
+├── easyr1/                      # EasyR1 integration
+│   ├── reward_function/
+│   │   └── raiden_vrar.py       # EasyR1-compatible reward function
+│   └── format_prompt/
+│       └── role_playing.jinja   # Prompt template for role-playing
 ├── data/
 │   ├── online_profiles.jsonl    # Character profiles
-│   └── training/                # Generated training data
+│   ├── training/                # Generated training data (RAIDEN-R1 format)
+│   └── easyr1/                  # Converted data for EasyR1
 ├── scripts/                     # Training and generation scripts
+│   ├── train_with_easyr1.sh     # EasyR1 training script
+│   └── convert_to_easyr1_format.py  # Data format converter
 └── accelerate_config.yaml       # Multi-GPU training config
 ```
 
@@ -103,7 +113,7 @@ python scripts/generate_data_with_bedrock.py \
 
 ### 3. Training
 
-RAIDEN-R1 provides two training implementations:
+RAIDEN-R1 provides three training implementations:
 
 > 📖 **Detailed OpenR1 Guide**: See [OPENR1_GUIDE.md](OPENR1_GUIDE.md) for complete documentation
 
@@ -158,9 +168,42 @@ watch -n 1 nvidia-smi
 tail -f outputs_openr1/training.log
 ```
 
+#### Option C: EasyR1 GRPO (High Performance 🚀)
+
+Uses EasyR1 framework for efficient and scalable RL training with vLLM:
+
+```bash
+# Install EasyR1
+git clone https://github.com/hiyouga/EasyR1.git
+cd EasyR1
+pip install -e .
+cd ..
+
+# Or use pre-built Docker image (recommended)
+docker pull hiyouga/verl:ngc-th2.8.0-cu12.9-vllm0.11.0
+docker run -it --ipc=host --gpus=all hiyouga/verl:ngc-th2.8.0-cu12.9-vllm0.11.0
+
+# Convert data to EasyR1 format
+python scripts/convert_to_easyr1_format.py \
+    --train_input ./data/training/train.json \
+    --val_input ./data/training/validation.json \
+    --train_output ./data/easyr1/train.json \
+    --val_output ./data/easyr1/validation.json
+
+# Start training
+bash scripts/train_with_easyr1.sh
+
+# Merge checkpoint to Hugging Face format
+bash scripts/merge_easyr1_checkpoint.sh \
+    checkpoints/easyr1/qwen2_5_14b_raiden_grpo/global_step_100/actor
+```
+
+📖 **Detailed Guide**: See [EASYR1_GUIDE.md](EASYR1_GUIDE.md) for complete documentation on EasyR1 integration, configuration, and optimization tips.
+
 **Comparison**:
 - **Custom GRPO**: Simpler, easier to debug, good for experimentation
 - **OpenR1**: Matches paper implementation, optimized performance, community-maintained
+- **EasyR1**: Production-ready, vLLM acceleration (3-5x faster generation), padding-free training, multi-node support
 
 **Training Configuration** (`configs/grpo_config.yaml` or `configs/openr1_config.yaml`):
 - Base Model: `Qwen/Qwen2.5-14B-Instruct`
@@ -344,6 +387,8 @@ python scripts/generate_data_with_sglang.py \
 ## Acknowledgments
 
 - Open-R1 library
+- EasyR1/veRL framework
 - RAIDEN Benchmark
 - Qwen2.5-14B-Instruct base model
 - SGLang framework
+- vLLM inference engine
