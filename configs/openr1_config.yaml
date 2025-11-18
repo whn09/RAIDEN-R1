@@ -20,9 +20,9 @@ accuracy_weight: 0.7
 format_weight: 0.3
 
 # GRPO parameters (will be mapped to TRL's naming: num_generations, beta)
-# WARNING: num_samples_per_prompt=1 essentially degrades to standard policy gradient
-# This is a compromise to fit 14B model on 140GB GPUs
-num_samples_per_prompt: 1  # MUST be 1 for 14B on 140GB GPUs (not真正的GRPO)
+# WARNING: GRPO requires at least 2 generations to calculate advantages
+# This is the absolute minimum for GRPO to work
+num_samples_per_prompt: 2  # Minimum required for GRPO (will be tight on 140GB)
 kl_penalty: 0.1            # KL divergence penalty coefficient (maps to beta)
 
 # Training hyperparameters (optimized for DeepSpeed ZeRO-3 + 14B model)
